@@ -1,0 +1,42 @@
+services:
+  ls-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: librarysongs:local
+    container_name: ls-app
+    volumes:
+      - ./.logs/app/:/usr/local/src/logs
+      - ./.env:/usr/local/src/.env
+      - ./configs/config.yml:/usr/local/src/configs/config.yml
+    depends_on:
+      ls-postgres:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT}:8000"
+    networks:
+      - ls-net
+    
+  ls-postgres:
+    image: bitnami/postgresql:latest
+    container_name: ls-postgres
+    environment:
+      POSTGRESQL_USERNAME: ${POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${POSTGRES_DB_NAME}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - ${POSTGRES_ALL_MIGRATIONS_PATH}:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ls-net
+
+networks:
+  ls-net:
+    name: ls-net
+    driver: bridge
