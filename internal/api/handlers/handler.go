@@ -3,14 +3,12 @@ package handlers
 import (
 	_ "LibSongs/docs_swagger"
 	"LibSongs/internal/services/interfaces"
-	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"io"
 	"net/http"
-	"time"
 )
 
 type Handler struct {
@@ -45,7 +43,6 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		}
 	}
 
-	router.GET("/info", h.someHandler)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return router
@@ -72,27 +69,4 @@ func (h *Handler) corsSettings() gin.HandlerFunc {
 			"Content-Type",
 		},
 	})
-}
-
-func (h *Handler) someHandler(ctx *gin.Context) {
-	fmt.Println("call some handler")
-
-	var (
-		songInfo struct {
-			ReleaseDate time.Time `json:"releaseDate"`
-			Text        string    `json:"text"`
-			Link        string    `json:"link"`
-		}
-		err error
-	)
-
-	songInfo.ReleaseDate, err = time.Parse("02.01.2006", "16.07.2006")
-	if err != nil {
-		fmt.Println("Ошибка при парсинге даты:", err)
-		return
-	}
-	songInfo.Text = "Ooh baby, don't you know I suffer?\nOoh baby, can you hear me moan?\nYou caught me under false pretenses\nHow long before you let me go?\n\nOoh, You set my soul alight\nOoh, You set my soul alight"
-	songInfo.Link = "https://www.youtube.com/watch?v=Xsp3_a-PMTw"
-
-	ctx.JSON(http.StatusOK, songInfo)
 }
